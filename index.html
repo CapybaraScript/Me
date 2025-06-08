@@ -30,7 +30,7 @@
 </head>
 <body>
 
-<h1>Compiler</h1>
+<h1>CapybaraScripts Compiler</h1>
 
 <div class="tabs">
   <div class="tab active" onclick="showTab('indexEditor')">index.html</div>
@@ -164,23 +164,23 @@ function updateStatus(newStatus) {
 }
 
 function runCode() {
-  const html = indexEditor.getValue();
-  const css = `<style>${cssEditor.getValue()}</style>`;
-  const js = `<script>${jsEditor.getValue()}<\/script>`;
-  const outputFrame = document.getElementById('outputWindow');
-  outputFrame.srcdoc = html + css + js;
-  clearInterval(runnerInterval);
-  runnerInterval = setInterval(() => {
-    if (!outputFrame.contentWindow) return;
-    try {
-      outputFrame.contentWindow.eval(jsEditor.getValue());
-    } catch (e) {
-      console.error(e);
-    }
-  }, 1000);
-  updateStatus('running');
-}
-
+  const html = indexEditor.getValue();
+  const css = `<style>${cssEditor.getValue()}</style>`;
+  const js = `<script>${jsEditor.getValue()}<\/script>`;
+  const outputFrame = document.getElementById('outputWindow');
+  outputFrame.srcdoc = html + css + js;
+  clearInterval(runnerInterval);
+  runnerInterval = setInterval(() => {
+    if (!outputFrame.contentWindow) return;
+    try {
+      outputFrame.contentWindow.eval(jsEditor.getValue());
+    } catch (e) {
+      console.error(e);
+    }
+  }, 1000);
+  updateStatus('running');
+  showTab('output');
+  
 function pauseCode() {
   clearInterval(runnerInterval);
   const outputFrame = document.getElementById('outputWindow');
