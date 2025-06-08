@@ -3,124 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compiler</title>
+<title>Dark Compiler</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/theme/dracula.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/hint/show-hint.min.css">
 <style>
-body { margin: 0; background: #1e1e1e; color: #fff; font-family: monospace; }
-.tabs { display: flex; background: #333; }
-.tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; background: #444; }
-.tab.active { background: #222; }
-.window { display: none; height: 600px; }
-.window.active { display: block; }
-.buttons { display: flex; justify-content: center; margin-top: 10px; }
-button { margin: 5px; padding: 10px; background: #555; border: none; color: #fff; cursor: pointer; }
-button:hover { background: #777; }
-#outputWindow { width: 100%; height: 100%; border: none; }
-#statusIndicator { text-align: center; margin-top: 10px; }
+body{margin:0;background:#0a0a0a;color:#eee;font-family:monospace}
+.t{display:flex;background:#111}
+.b{flex:1;padding:10px;text-align:center;cursor:pointer;background:#222;user-select:none}
+.b.a{background:#000}
+.w{display:none}
+.w.a{display:block}
+.x{display:flex;justify-content:center;margin-top:10px;flex-wrap:wrap}
+button,select{margin:5px;padding:10px;background:#333;border:none;color:#fff;cursor:pointer}
+button:hover,select:hover{background:#555}
+#s{text-align:center;margin-top:10px}
 </style>
 </head>
 <body>
-<div class="tabs">
-<div class="tab active" onclick="showTab('index')">index.html</div>
-<div class="tab" onclick="showTab('css')">styles.css</div>
-<div class="tab" onclick="showTab('js')">script.js</div>
-<div class="tab" onclick="showTab('output')">Output</div>
+<div class="t" id="t">
+<div class="b a" onclick="h('index')">index.html</div>
 </div>
-<div id="index" class="window active"><textarea id="indexCode"></textarea></div>
-<div id="css" class="window"><textarea id="cssCode"></textarea></div>
-<div id="js" class="window"><textarea id="jsCode"></textarea></div>
-<div id="output" class="window"><iframe id="outputWindow"></iframe></div>
-<div class="buttons">
-<button onclick="runCode()">Run</button>
-<button onclick="pauseCode()">Pause</button>
-<button onclick="stopCode()">Stop</button>
-<button onclick="downloadCode()">Download</button>
-<button onclick="clearEditors()">Clear</button>
+<div id="y">
+<div id="index" class="w a"></div>
 </div>
-<div id="statusIndicator">Status: stopped</div>
+<div class="x">
+<button onclick="r()">Run</button>
+<button onclick="p()">Pause</button>
+<button onclick="q()">Stop</button>
+<button onclick="d()">Download</button>
+<button onclick="c()">Clear</button>
+<button onclick="v()">Copy</button>
+<button onclick="m()">Paste</button>
+<button onclick="u()">Undo</button>
+<button onclick="l()">Redo</button>
+<select id="z" onchange="j(this.value)">
+<option value="">Window Actions</option>
+<option value="n">New Window</option>
+<option value="e">Delete Current Window</option>
+</select>
+</div>
+<div id="s">Status: stopped</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/htmlmixed/htmlmixed.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/css/css.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/javascript/javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/hint/show-hint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/hint/html-hint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/hint/css-hint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/hint/javascript-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/theme/dracula.min.js"></script>
 <script>
-let indexEditor, cssEditor, jsEditor, runnerInterval, status = 'stopped'
-window.onload = function() {
-indexEditor = CodeMirror.fromTextArea(document.getElementById('indexCode'), { lineNumbers: true, mode: "htmlmixed", theme: "dracula", extraKeys: { "Ctrl-Space": "autocomplete" } })
-cssEditor = CodeMirror.fromTextArea(document.getElementById('cssCode'), { lineNumbers: true, mode: "css", theme: "dracula", extraKeys: { "Ctrl-Space": "autocomplete" } })
-jsEditor = CodeMirror.fromTextArea(document.getElementById('jsCode'), { lineNumbers: true, mode: "javascript", theme: "dracula", extraKeys: { "Ctrl-Space": "autocomplete" } })
-indexEditor.setSize("100%", "600px")
-cssEditor.setSize("100%", "600px")
-jsEditor.setSize("100%", "600px")
-if (localStorage.getItem('indexCode')) indexEditor.setValue(localStorage.getItem('indexCode'))
-if (localStorage.getItem('cssCode')) cssEditor.setValue(localStorage.getItem('cssCode'))
-if (localStorage.getItem('jsCode')) jsEditor.setValue(localStorage.getItem('jsCode'))
-indexEditor.on('change', () => localStorage.setItem('indexCode', indexEditor.getValue()))
-cssEditor.on('change', () => localStorage.setItem('cssCode', cssEditor.getValue()))
-jsEditor.on('change', () => localStorage.setItem('jsCode', jsEditor.getValue()))
-}
-function showTab(tabId) {
-document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'))
-document.querySelectorAll('.window').forEach(win => win.classList.remove('active'))
-document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active')
-document.getElementById(tabId).classList.add('active')
-}
-function updateStatus(newStatus) {
-status = newStatus
-document.getElementById('statusIndicator').textContent = 'Status: ' + status
-}
-function runCode() {
-const html = indexEditor.getValue()
-const css = `<style>${cssEditor.getValue()}</style>`
-const js = `<script>${jsEditor.getValue()}<\/script>`
-const outputFrame = document.getElementById('outputWindow')
-outputFrame.srcdoc = html + css + js
-clearInterval(runnerInterval)
-runnerInterval = setInterval(() => { if (!outputFrame.contentWindow) return; try { outputFrame.contentWindow.eval(jsEditor.getValue()) } catch (e) {} }, 1000)
-updateStatus('running')
-showTab('output')
-}
-function pauseCode() {
-clearInterval(runnerInterval)
-const outputFrame = document.getElementById('outputWindow')
-const doc = outputFrame.contentDocument || outputFrame.contentWindow.document
-const pauseMsg = doc.createElement('p')
-pauseMsg.style.color = 'red'
-pauseMsg.style.fontSize = '1.2em'
-pauseMsg.textContent = '⚠️ Code paused'
-doc.body.appendChild(pauseMsg)
-updateStatus('paused')
-}
-function stopCode() {
-clearInterval(runnerInterval)
-document.getElementById('outputWindow').srcdoc = ''
-updateStatus('stopped')
-}
-function downloadCode() {
-const zip = { 'index.html': indexEditor.getValue(), 'styles.css': cssEditor.getValue(), 'script.js': jsEditor.getValue() }
-for (const file in zip) {
-const blob = new Blob([zip[file]], { type: 'text/plain' })
-const url = URL.createObjectURL(blob)
-const a = document.createElement('a')
-a.href = url
-a.download = file
-a.click()
-URL.revokeObjectURL(url)
-}
-}
-function clearEditors() {
-indexEditor.setValue('')
-cssEditor.setValue('')
-jsEditor.setValue('')
-localStorage.removeItem('indexCode')
-localStorage.removeItem('cssCode')
-localStorage.removeItem('jsCode')
-}
+let o={},g,b='stopped';
+window.onload=()=>{f('index')};
+function f(a){let e=document.getElementById(a)||document.createElement('div');e.id=a;e.classList.add('w');e.innerHTML='';let i=document.createElement('textarea');i.id=a+'c';e.appendChild(i);if(!e.parentNode)document.getElementById('y').appendChild(e);let t=CodeMirror.fromTextArea(i,{lineNumbers:true,mode:'htmlmixed',theme:'dracula'});t.setSize('100%','800px');if(localStorage.getItem(a+'c'))t.setValue(localStorage.getItem(a+'c'));t.on('change',()=>localStorage.setItem(a+'c',t.getValue()));o[a]=t;if(!document.querySelector(`.b[onclick="h('${a}')"]`)){let w=document.createElement('div');w.classList.add('b');w.textContent=a+'.html';w.onclick=()=>h(a);document.getElementById('t').appendChild(w)}}
+function h(a){document.querySelectorAll('.b').forEach(e=>e.classList.remove('a'));document.querySelectorAll('.w').forEach(e=>e.classList.remove('a'));document.querySelector(`.b[onclick="h('${a}')"]`).classList.add('a');document.getElementById(a).classList.add('a')}
+function y(a){b=a;document.getElementById('s').textContent='Status: '+b}
+function r(){let a=o['index']?o['index'].getValue():'';let e=o['css']?`<style>${o['css'].getValue()}</style>`:'';let i=o['js']?`<script>${o['js'].getValue()}<\/script>`:'';let t=document.createElement('iframe');t.style.width='100%';t.style.height='600px';t.srcdoc=a+e+i;let w=document.getElementById('output');if(!w)w=z();w.innerHTML='';w.appendChild(t);clearInterval(g);g=setInterval(()=>{if(!t.contentWindow)return;try{t.contentWindow.eval(i)}catch(e){}},1000);y('running');h('output')}
+function z(){let a=document.createElement('div');a.id='output';a.classList.add('w');document.getElementById('y').appendChild(a);let e=document.createElement('div');e.classList.add('b');e.textContent='Output';e.onclick=()=>h('output');document.getElementById('t').appendChild(e);return a}
+function p(){clearInterval(g);let a=document.getElementById('output');if(a){let e=document.createElement('p');e.style.color='red';e.textContent='⚠️ Code paused';a.appendChild(e)}y('paused')}
+function q(){clearInterval(g);let a=document.getElementById('output');if(a)a.innerHTML='';y('stopped')}
+function d(){for(let a in o){let e=new Blob([o[a].getValue()],{type:'text/plain'});let i=URL.createObjectURL(e);let t=document.createElement('a');t.href=i;t.download=a+'.html';t.click();URL.revokeObjectURL(i)}}
+function c(){for(let a in o){o[a].setValue('');localStorage.removeItem(a+'c')}}
+async function v(){let a=w();try{await navigator.clipboard.writeText(o[a].getValue())}catch(e){alert('Copy failed: '+e)}}
+async function m(){let a=w();try{let e=await navigator.clipboard.readText();o[a].replaceSelection(e)}catch(e){alert('Paste failed: '+e)}}
+function u(){let a=w();if(o[a])o[a].undo()}
+function l(){let a=w();if(o[a])o[a].redo()}
+function j(a){let e=w();if(a==='n'){let i=prompt('Enter new window name:');if(i&&!o[i])f(i)}else if(a==='e'){if(e==='index'||e==='output')return alert('Cannot delete this window');document.getElementById(e).remove();document.querySelector(`.b[onclick="h('${e}')"]`).remove();delete o[e];h('index')}document.getElementById('z').value=''}
+function w(){return document.querySelector('.b.a').textContent.replace('.html','')}
 </script>
 </body>
 </html>
