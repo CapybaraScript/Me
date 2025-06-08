@@ -2,109 +2,44 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>CapybaraScript Compiler</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compiler</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/theme/dracula.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/hint/show-hint.min.css">
 <style>
-  body { font-family: sans-serif; background: #1e1e1e; color: #eee; display: flex; flex-direction: column; align-items: center; margin: 1em; gap: 1em; }
-  h1 { color: #eee; }
-  .tabs { display: flex; margin-bottom: 0.5em; flex-wrap: wrap; }
-  .tab { padding: 0.5em 1em; cursor: pointer; background: #333; color: #eee; margin-right: 0.2em; border-radius: 4px 4px 0 0; }
-  .tab.active { background: #444; border: 1px solid #666; border-bottom: none; }
-  .window { border: 1px solid #666; border-radius: 0 0 8px 8px; background: #2e2e2e; width: 90%; max-width: 1200px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); display: none; }
-  .window.active { display: block; }
-  .titlebar { background: #444; display: flex; align-items: center; padding: 0.3em 0.5em; border-bottom: 1px solid #666; border-top-left-radius: 8px; border-top-right-radius: 8px; }
-  .titlebar .buttons { display: flex; gap: 0.3em; margin-right: 0.5em; }
-  .titlebar .button { width: 12px; height: 12px; border-radius: 50%; }
-  .red { background: #f66; }
-  .yellow { background: #fc3; }
-  .green { background: #3c3; }
-  .address-bar { flex: 1; background: #555; border: 1px solid #666; border-radius: 4px; padding: 0.2em 0.5em; font-size: 0.9em; color: #eee; }
-  .content { padding: 0.5em; }
-  iframe { width: 100%; height: 600px; border: none; background: #1e1e1e; }
-  button { margin: 0.3em; background: #444; color: #eee; border: 1px solid #666; border-radius: 4px; padding: 0.5em 1em; cursor: pointer; }
-  button:hover { background: #555; }
-  .status { font-weight: bold; color: #ccc; }
+body { margin: 0; background: #1e1e1e; color: #fff; font-family: monospace; }
+.tabs { display: flex; background: #333; }
+.tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; background: #444; }
+.tab.active { background: #222; }
+.window { display: none; height: 600px; }
+.window.active { display: block; }
+.buttons { display: flex; justify-content: center; margin-top: 10px; }
+button { margin: 5px; padding: 10px; background: #555; border: none; color: #fff; cursor: pointer; }
+button:hover { background: #777; }
+#outputWindow { width: 100%; height: 100%; border: none; }
+#statusIndicator { text-align: center; margin-top: 10px; }
 </style>
 </head>
 <body>
-
-<h1>CapybaraScripts Compiler</h1>
-
 <div class="tabs">
-  <div class="tab active" onclick="showTab('indexEditor')">index.html</div>
-  <div class="tab" onclick="showTab('cssEditor')">styles.css</div>
-  <div class="tab" onclick="showTab('jsEditor')">script.js</div>
-  <div class="tab" onclick="showTab('output')">Output</div>
+<div class="tab active" onclick="showTab('index')">index.html</div>
+<div class="tab" onclick="showTab('css')">styles.css</div>
+<div class="tab" onclick="showTab('js')">script.js</div>
+<div class="tab" onclick="showTab('output')">Output</div>
 </div>
-
-<div class="window active" id="indexEditor">
-  <div class="titlebar">
-    <div class="buttons">
-      <div class="button red"></div>
-      <div class="button yellow"></div>
-      <div class="button green"></div>
-    </div>
-    <div class="address-bar">https://editor.local/index.html</div>
-  </div>
-  <div class="content">
-    <textarea id="indexCode"></textarea>
-  </div>
+<div id="index" class="window active"><textarea id="indexCode"></textarea></div>
+<div id="css" class="window"><textarea id="cssCode"></textarea></div>
+<div id="js" class="window"><textarea id="jsCode"></textarea></div>
+<div id="output" class="window"><iframe id="outputWindow"></iframe></div>
+<div class="buttons">
+<button onclick="runCode()">Run</button>
+<button onclick="pauseCode()">Pause</button>
+<button onclick="stopCode()">Stop</button>
+<button onclick="downloadCode()">Download</button>
+<button onclick="clearEditors()">Clear</button>
 </div>
-
-<div class="window" id="cssEditor">
-  <div class="titlebar">
-    <div class="buttons">
-      <div class="button red"></div>
-      <div class="button yellow"></div>
-      <div class="button green"></div>
-    </div>
-    <div class="address-bar">https://editor.local/styles.css</div>
-  </div>
-  <div class="content">
-    <textarea id="cssCode"></textarea>
-  </div>
-</div>
-
-<div class="window" id="jsEditor">
-  <div class="titlebar">
-    <div class="buttons">
-      <div class="button red"></div>
-      <div class="button yellow"></div>
-      <div class="button green"></div>
-    </div>
-    <div class="address-bar">https://editor.local/script.js</div>
-  </div>
-  <div class="content">
-    <textarea id="jsCode"></textarea>
-  </div>
-</div>
-
-<div class="window" id="output">
-  <div class="titlebar">
-    <div class="buttons">
-      <div class="button red"></div>
-      <div class="button yellow"></div>
-      <div class="button green"></div>
-    </div>
-    <div class="address-bar">https://output.local/</div>
-  </div>
-  <div class="content">
-    <iframe id="outputWindow"></iframe>
-  </div>
-</div>
-
-<div>
-  <button onclick="runCode()">Run</button>
-  <button onclick="pauseCode()">Pause</button>
-  <button onclick="stopCode()">Stop</button>
-  <button onclick="downloadCode()">Download</button>
-  <button onclick="clearEditors()">Clear</button>
-</div>
-
-<div class="status" id="statusIndicator">Status: stopped</div>
-
+<div id="statusIndicator">Status: stopped</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/htmlmixed/htmlmixed.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/css/css.min.js"></script>
@@ -113,115 +48,79 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/hint/html-hint.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/hint/css-hint.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/hint/javascript-hint.min.js"></script>
-
 <script>
-let indexEditor, cssEditor, jsEditor;
-let runnerInterval;
-let status = 'stopped';
-
+let indexEditor, cssEditor, jsEditor, runnerInterval, status = 'stopped'
 window.onload = function() {
-  indexEditor = CodeMirror.fromTextArea(document.getElementById('indexCode'), {
-    lineNumbers: true,
-    mode: "htmlmixed",
-    theme: "dracula",
-    extraKeys: { "Ctrl-Space": "autocomplete" }
-  });
-  cssEditor = CodeMirror.fromTextArea(document.getElementById('cssCode'), {
-    lineNumbers: true,
-    mode: "css",
-    theme: "dracula",
-    extraKeys: { "Ctrl-Space": "autocomplete" }
-  });
-  jsEditor = CodeMirror.fromTextArea(document.getElementById('jsCode'), {
-    lineNumbers: true,
-    mode: "javascript",
-    theme: "dracula",
-    extraKeys: { "Ctrl-Space": "autocomplete" }
-  });
-  indexEditor.setSize("100%", "600px");
-  cssEditor.setSize("100%", "600px");
-  jsEditor.setSize("100%", "600px");
-
-  if (localStorage.getItem('indexCode')) indexEditor.setValue(localStorage.getItem('indexCode'));
-  if (localStorage.getItem('cssCode')) cssEditor.setValue(localStorage.getItem('cssCode'));
-  if (localStorage.getItem('jsCode')) jsEditor.setValue(localStorage.getItem('jsCode'));
-
-  indexEditor.on('change', () => localStorage.setItem('indexCode', indexEditor.getValue()));
-  cssEditor.on('change', () => localStorage.setItem('cssCode', cssEditor.getValue()));
-  jsEditor.on('change', () => localStorage.setItem('jsCode', jsEditor.getValue()));
-};
-
+indexEditor = CodeMirror.fromTextArea(document.getElementById('indexCode'), { lineNumbers: true, mode: "htmlmixed", theme: "dracula", extraKeys: { "Ctrl-Space": "autocomplete" } })
+cssEditor = CodeMirror.fromTextArea(document.getElementById('cssCode'), { lineNumbers: true, mode: "css", theme: "dracula", extraKeys: { "Ctrl-Space": "autocomplete" } })
+jsEditor = CodeMirror.fromTextArea(document.getElementById('jsCode'), { lineNumbers: true, mode: "javascript", theme: "dracula", extraKeys: { "Ctrl-Space": "autocomplete" } })
+indexEditor.setSize("100%", "600px")
+cssEditor.setSize("100%", "600px")
+jsEditor.setSize("100%", "600px")
+if (localStorage.getItem('indexCode')) indexEditor.setValue(localStorage.getItem('indexCode'))
+if (localStorage.getItem('cssCode')) cssEditor.setValue(localStorage.getItem('cssCode'))
+if (localStorage.getItem('jsCode')) jsEditor.setValue(localStorage.getItem('jsCode'))
+indexEditor.on('change', () => localStorage.setItem('indexCode', indexEditor.getValue()))
+cssEditor.on('change', () => localStorage.setItem('cssCode', cssEditor.getValue()))
+jsEditor.on('change', () => localStorage.setItem('jsCode', jsEditor.getValue()))
+}
 function showTab(tabId) {
-  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-  document.querySelectorAll('.window').forEach(win => win.classList.remove('active'));
-  document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
-  document.getElementById(tabId).classList.add('active');
+document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'))
+document.querySelectorAll('.window').forEach(win => win.classList.remove('active'))
+document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active')
+document.getElementById(tabId).classList.add('active')
 }
-
 function updateStatus(newStatus) {
-  status = newStatus;
-  document.getElementById('statusIndicator').textContent = 'Status: ' + status;
+status = newStatus
+document.getElementById('statusIndicator').textContent = 'Status: ' + status
 }
-
 function runCode() {
-  const html = indexEditor.getValue();
-  const css = `<style>${cssEditor.getValue()}</style>`;
-  const js = `<script>${jsEditor.getValue()}<\/script>`;
-  const outputFrame = document.getElementById('outputWindow');
-  outputFrame.srcdoc = html + css + js;
-  clearInterval(runnerInterval);
-  runnerInterval = setInterval(() => {
-    if (!outputFrame.contentWindow) return;
-    try {
-      outputFrame.contentWindow.eval(jsEditor.getValue());
-    } catch (e) {
-      console.error(e);
-    }
-  }, 1000);
-  updateStatus('running');
-  showTab('output');
-  
+const html = indexEditor.getValue()
+const css = `<style>${cssEditor.getValue()}</style>`
+const js = `<script>${jsEditor.getValue()}<\/script>`
+const outputFrame = document.getElementById('outputWindow')
+outputFrame.srcdoc = html + css + js
+clearInterval(runnerInterval)
+runnerInterval = setInterval(() => { if (!outputFrame.contentWindow) return; try { outputFrame.contentWindow.eval(jsEditor.getValue()) } catch (e) {} }, 1000)
+updateStatus('running')
+showTab('output')
+}
 function pauseCode() {
-  clearInterval(runnerInterval);
-  const outputFrame = document.getElementById('outputWindow');
-  const doc = outputFrame.contentDocument || outputFrame.contentWindow.document;
-  const pauseMsg = doc.createElement('p');
-  pauseMsg.style.color = 'red';
-  pauseMsg.style.fontSize = '1.2em';
-  pauseMsg.textContent = '⚠️ Code paused';
-  doc.body.appendChild(pauseMsg);
-  updateStatus('paused');
+clearInterval(runnerInterval)
+const outputFrame = document.getElementById('outputWindow')
+const doc = outputFrame.contentDocument || outputFrame.contentWindow.document
+const pauseMsg = doc.createElement('p')
+pauseMsg.style.color = 'red'
+pauseMsg.style.fontSize = '1.2em'
+pauseMsg.textContent = '⚠️ Code paused'
+doc.body.appendChild(pauseMsg)
+updateStatus('paused')
 }
-
 function stopCode() {
-  clearInterval(runnerInterval);
-  document.getElementById('outputWindow').srcdoc = '';
-  updateStatus('stopped');
+clearInterval(runnerInterval)
+document.getElementById('outputWindow').srcdoc = ''
+updateStatus('stopped')
 }
-
 function downloadCode() {
-  const zip = {
-    'index.html': indexEditor.getValue(),
-    'styles.css': cssEditor.getValue(),
-    'script.js': jsEditor.getValue()
-  };
-  for (const file in zip) {
-    const blob = new Blob([zip[file]], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = file;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+const zip = { 'index.html': indexEditor.getValue(), 'styles.css': cssEditor.getValue(), 'script.js': jsEditor.getValue() }
+for (const file in zip) {
+const blob = new Blob([zip[file]], { type: 'text/plain' })
+const url = URL.createObjectURL(blob)
+const a = document.createElement('a')
+a.href = url
+a.download = file
+a.click()
+URL.revokeObjectURL(url)
 }
-
+}
 function clearEditors() {
-  indexEditor.setValue('');
-  cssEditor.setValue('');
-  jsEditor.setValue('');
-  localStorage.removeItem('indexCode');
-  localStorage.removeItem('cssCode');
-  localStorage.removeItem('jsCode');
+indexEditor.setValue('')
+cssEditor.setValue('')
+jsEditor.setValue('')
+localStorage.removeItem('indexCode')
+localStorage.removeItem('cssCode')
+localStorage.removeItem('jsCode')
 }
 </script>
+</body>
+</html>
