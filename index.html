@@ -2,28 +2,28 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Compiler</title>
+<title>CapybaraScript Compiler</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/theme/dracula.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/addon/hint/show-hint.min.css">
 <style>
   body { font-family: sans-serif; background: #1e1e1e; color: #eee; display: flex; flex-direction: column; align-items: center; margin: 1em; gap: 1em; }
   h1 { color: #eee; }
-  .tabs { display: flex; margin-bottom: 0.5em; overflow-x: auto; }
-  .tab { padding: 0.5em 1em; cursor: pointer; background: #333; color: #eee; margin-right: 0.2em; border-radius: 4px 4px 0 0; flex: 1; text-align: center; }
+  .tabs { display: flex; margin-bottom: 0.5em; flex-wrap: wrap; }
+  .tab { padding: 0.5em 1em; cursor: pointer; background: #333; color: #eee; margin-right: 0.2em; border-radius: 4px 4px 0 0; }
   .tab.active { background: #444; border: 1px solid #666; border-bottom: none; }
-  .window { border: 1px solid #666; border-radius: 0 0 8px 8px; background: #2e2e2e; width: 100%; max-width: 400px; height: 500px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); display: none; flex-direction: column; }
-  .window.active { display: flex; }
+  .window { border: 1px solid #666; border-radius: 0 0 8px 8px; background: #2e2e2e; width: 90%; max-width: 1200px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); display: none; }
+  .window.active { display: block; }
   .titlebar { background: #444; display: flex; align-items: center; padding: 0.3em 0.5em; border-bottom: 1px solid #666; border-top-left-radius: 8px; border-top-right-radius: 8px; }
   .titlebar .buttons { display: flex; gap: 0.3em; margin-right: 0.5em; }
   .titlebar .button { width: 12px; height: 12px; border-radius: 50%; }
   .red { background: #f66; }
   .yellow { background: #fc3; }
   .green { background: #3c3; }
-  .address-bar { flex: 1; background: #555; border: 1px solid #666; border-radius: 4px; padding: 0.2em 0.5em; font-size: 0.8em; color: #eee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .content { flex: 1; padding: 0.5em; }
-  iframe { width: 100%; height: 100%; border: none; background: #1e1e1e; }
-  button { margin: 0.3em; background: #444; color: #eee; border: 1px solid #666; border-radius: 4px; padding: 0.5em 1em; cursor: pointer; width: 80px; }
+  .address-bar { flex: 1; background: #555; border: 1px solid #666; border-radius: 4px; padding: 0.2em 0.5em; font-size: 0.9em; color: #eee; }
+  .content { padding: 0.5em; }
+  iframe { width: 100%; height: 600px; border: none; background: #1e1e1e; }
+  button { margin: 0.3em; background: #444; color: #eee; border: 1px solid #666; border-radius: 4px; padding: 0.5em 1em; cursor: pointer; }
   button:hover { background: #555; }
   .status { font-weight: bold; color: #ccc; }
 </style>
@@ -138,20 +138,17 @@ window.onload = function() {
     theme: "dracula",
     extraKeys: { "Ctrl-Space": "autocomplete" }
   });
-
   indexEditor.setSize("100%", "600px");
   cssEditor.setSize("100%", "600px");
   jsEditor.setSize("100%", "600px");
 
-  // Load saved content
-  indexEditor.setValue(localStorage.getItem('code_index') || '');
-  cssEditor.setValue(localStorage.getItem('code_css') || '');
-  jsEditor.setValue(localStorage.getItem('code_js') || '');
+  if (localStorage.getItem('indexCode')) indexEditor.setValue(localStorage.getItem('indexCode'));
+  if (localStorage.getItem('cssCode')) cssEditor.setValue(localStorage.getItem('cssCode'));
+  if (localStorage.getItem('jsCode')) jsEditor.setValue(localStorage.getItem('jsCode'));
 
-  // Save on change
-  indexEditor.on('change', () => localStorage.setItem('code_index', indexEditor.getValue()));
-  cssEditor.on('change', () => localStorage.setItem('code_css', cssEditor.getValue()));
-  jsEditor.on('change', () => localStorage.setItem('code_js', jsEditor.getValue()));
+  indexEditor.on('change', () => localStorage.setItem('indexCode', indexEditor.getValue()));
+  cssEditor.on('change', () => localStorage.setItem('cssCode', cssEditor.getValue()));
+  jsEditor.on('change', () => localStorage.setItem('jsCode', jsEditor.getValue()));
 };
 
 function showTab(tabId) {
@@ -223,11 +220,8 @@ function clearEditors() {
   indexEditor.setValue('');
   cssEditor.setValue('');
   jsEditor.setValue('');
-  localStorage.removeItem('code_index');
-  localStorage.removeItem('code_css');
-  localStorage.removeItem('code_js');
+  localStorage.removeItem('indexCode');
+  localStorage.removeItem('cssCode');
+  localStorage.removeItem('jsCode');
 }
 </script>
-
-</body>
-</html>
